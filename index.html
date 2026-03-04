@@ -3,131 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Faculty List</title>
+    <title>Teacher Directory</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
-        .header { text-align: center; margin-bottom: 30px; }
-        h1 { color: #1a73e8; margin-bottom: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .header-section { text-align: center; margin-bottom: 30px; }
+        h1 { color: #1a73e8; }
         
+        /* Search Bar Style */
         #search-input { 
-            padding: 12px 20px; width: 80%; max-width: 400px; 
-            border-radius: 25px; border: 2px solid #1a73e8; 
-            outline: none; font-size: 16px; margin-bottom: 10px;
+            padding: 12px; width: 80%; max-width: 400px; 
+            border-radius: 25px; border: 1px solid #ccc; 
+            outline: none; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         #teacher-grid { 
             display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 25px; max-width: 1200px; margin: 0 auto; 
+            gap: 20px; max-width: 1200px; margin: 0 auto; 
         }
 
         .card { 
-            background: white; border-radius: 15px; padding: 25px; 
-            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
-            position: relative; border-top: 6px solid #1a73e8;
-        }
-
-        .sn-badge {
-            position: absolute; top: 10px; right: 10px; 
-            background: #1a73e8; color: white; width: 28px; height: 28px; 
-            border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; font-size: 13px; font-weight: bold;
+            background: white; border-radius: 12px; padding: 20px; 
+            text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
         }
 
         .profile-img { 
             width: 120px; height: 120px; border-radius: 50%; 
-            object-fit: cover; border: 4px solid #e8f0fe; 
-            margin-bottom: 15px; background: #eee;
+            object-fit: cover; border: 4px solid #1a73e8; margin-bottom: 15px;
         }
 
-        h2 { margin: 10px 0 5px; font-size: 1.5rem; color: #202124; }
-        .designation { color: #1a73e8; font-weight: bold; margin-bottom: 20px; display: block; }
-
-        .info-table { width: 100%; text-align: left; border-top: 1px solid #eee; padding-top: 15px; }
-        .info-table td { padding: 6px 0; font-size: 0.95rem; }
-        .label { font-weight: 600; color: #5f6368; width: 45%; }
-        .value { color: #202124; }
-        
-        .status-msg { text-align: center; font-size: 1.2rem; grid-column: 1/-1; margin-top: 50px; color: #666; }
+        .designation { color: #1a73e8; font-weight: bold; margin-bottom: 15px; display: block; }
+        .info-table { width: 100%; text-align: left; border-top: 1px solid #eee; padding-top: 10px; }
+        .info-table td { padding: 5px 0; font-size: 0.9rem; }
+        .label { font-weight: 600; width: 45%; color: #333; }
     </style>
 </head>
 <body>
 
-    <div class="header">
+    <div class="header-section">
         <h1>Our Teaching Faculty</h1>
         <input type="text" id="search-input" placeholder="Teacher ka naam search karein..." onkeyup="filterTeachers()">
-        <div id="counter" style="margin-top:10px; font-weight:bold; color:#555;"></div>
     </div>
 
     <div id="teacher-grid">
-        <p class="status-msg">Data load ho raha hai, kripya intezar karein...</p>
+        <p style="text-align:center;">Loading teachers...</p>
     </div>
 
 <script>
-    // Link Updated to TSV to handle commas correctly
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A72Ggp1ZTuemOwgGvj3bmygTir6-2UkWnSe7ckE3D8DKIAv1wB3-e0Dt7hZEWaSX7FTxaQGNexXi/pub?output=tsv';
-    
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A720gp1ZtIueM0wgGvj3bwygTir6-2UkMm5e7ckE3OXOKIAv1wB3-eODt7hZEHa6X7FtXaQ6NeXi/pub?output=csv'; // Step 1 wala link
     let allTeachers = [];
 
     async function fetchTeachers() {
         try {
             const response = await fetch(sheetUrl);
             const data = await response.text();
-            const rows = data.split('\n').slice(1); 
             
+            // CSV parsing logic
+            const rows = data.split('\n').slice(1); 
             allTeachers = rows.map(row => {
-                // Split by TAB (\t) instead of comma
-                return row.split('\t').map(cell => cell.trim());
-            }).filter(cols => cols.length >= 8 && cols[0] !== "");
+                // Handle commas inside quotes
+                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                return cols ? cols.map(c => c.replace(/"/g, '')) : null;
+            }).filter(row => row !== null && row[0] !== "");
 
             displayTeachers(allTeachers);
         } catch (error) {
-            document.getElementById('teacher-grid').innerHTML = "<p class='status-msg'>Data load nahi ho saka. Refresh karein.</p>";
-            console.error(error);
+            document.getElementById('teacher-grid').innerHTML = "Link check karein, data nahi mil raha.";
         }
     }
 
     function displayTeachers(teachers) {
-        const grid = document.getElementById('teacher-grid');
-        const counter = document.getElementById('counter');
-        
-        counter.innerHTML = "Total Teachers: " + teachers.length;
-
-        if (teachers.length === 0) {
-            grid.innerHTML = "<p class='status-msg'>Koi record nahi mila.</p>";
-            return;
-        }
-
         let html = '';
-        teachers.forEach((t, index) => {
-            // Photo link correction for Google Drive
-            let photoUrl = t[7];
-            if (photoUrl.includes('drive.google.com')) {
-                let fileId = '';
-                if (photoUrl.includes('id=')) {
-                    fileId = photoUrl.split('id=')[1].split('&')[0];
-                } else {
-                    fileId = photoUrl.split('/d/')[1].split('/')[0];
-                }
-                photoUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
-            }
-
+        teachers.forEach(teacher => {
             html += `
                 <div class="card">
-                    <div class="sn-badge">${index + 1}</div>
-                    <img src="${photoUrl}" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
-                    <h2>${t[0]}</h2>
-                    <span class="designation">${t[3]}</span>
+                    <img src="${teacher[7]}" class="profile-img" onerror="this.src='https://via.placeholder.com/150'">
+                    <h2>${teacher[0]}</h2>
+                    <span class="designation">${teacher[3]}</span>
                     <table class="info-table">
-                        <tr><td class="label">Father:</td><td class="value">${t[1]}</td></tr>
-                        <tr><td class="label">Mother:</td><td class="value">${t[2]}</td></tr>
-                        <tr><td class="label">Qualification:</td><td class="value">${t[4]}</td></tr>
-                        <tr><td class="label">Subject:</td><td class="value">${t[5]}</td></tr>
-                        <tr><td class="label">Experience:</td><td class="value">${t[6]}</td></tr>
+                        <tr><td class="label">Father:</td><td>${teacher[1]}</td></tr>
+                        <tr><td class="label">Mother:</td><td>${teacher[2]}</td></tr>
+                        <tr><td class="label">Qualification:</td><td>${teacher[4]}</td></tr>
+                        <tr><td class="label">Subject:</td><td>${teacher[5]}</td></tr>
+                        <tr><td class="label">Experience:</td><td>${teacher[6]}</td></tr>
                     </table>
-                </div>
-            `;
+                </div>`;
         });
-        grid.innerHTML = html;
+        document.getElementById('teacher-grid').innerHTML = html;
     }
 
     function filterTeachers() {
