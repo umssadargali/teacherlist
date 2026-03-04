@@ -3,168 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sikshak Directory</title>
+    <title>Teacher Profile</title>
     <style>
-        /* Pehle wala simple white background design */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .header-section { text-align: center; margin-bottom: 30px; }
-        h1 { color: #1a73e8; }
-        
-        /* Search Bar Style */
-        #search-input { 
-            padding: 12px; width: 80%; max-width: 400px; 
-            border-radius: 25px; border: 1px solid #ccc; 
-            outline: none; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        /* Container for cards */
-        #teacher-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 20px; 
-            max-width: 1200px; 
-            margin: 0 auto; 
-        }
-
-        /* Individual Card Design */
-        .card { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 20px; 
-            text-align: center; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            position: relative;
-        }
-
-        /* Serial Number badge */
-        .sn-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #1a73e8;
-            color: white;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .profile-img { 
-            width: 120px; height: 120px; 
-            border-radius: 50%; 
-            object-fit: cover; 
-            border: 4px solid #1a73e8; 
-            margin-bottom: 15px;
-            background-color: #eee; /* Loading placeholder color */
-        }
-
-        h2 { margin: 10px 0 5px; color: #333; font-size: 1.4rem; }
-        .designation { color: #1a73e8; font-weight: bold; margin-bottom: 15px; display: block; }
-
-        .info-table { width: 100%; text-align: left; border-top: 1px solid #eee; padding-top: 10px; border-collapse: collapse; }
-        .info-table td { padding: 5px 0; font-size: 0.9rem; color: #555; }
-        .label { font-weight: 600; width: 45%; color: #333; }
-        
-        .loading, .error-msg { text-align: center; font-size: 1.2rem; margin-top: 50px; grid-column: 1 / -1; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        #search-input { padding: 12px; width: 80%; max-width: 400px; border-radius: 25px; border: 1px solid #ddd; outline: none; }
+        #teacher-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto; }
+        .card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; border-top: 5px solid #1a73e8; }
+        .sn { position: absolute; top: 10px; right: 10px; background: #1a73e8; color: white; width: 25px; height: 25px; border-radius: 50%; font-size: 12px; line-height: 25px; font-weight: bold; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid #1a73e8; margin-bottom: 10px; background: #eee; }
+        h2 { margin: 10px 0 5px; color: #333; }
+        .desig { color: #1a73e8; font-weight: bold; margin-bottom: 15px; display: block; }
+        .info-table { width: 100%; text-align: left; border-top: 1px solid #eee; }
+        .info-table td { padding: 6px 0; font-size: 14px; color: #555; border-bottom: 1px solid #f9f9f9; }
+        .label { font-weight: bold; color: #333; width: 45%; }
     </style>
 </head>
 <body>
 
-    <div class="header-section">
-        <h1>Our Teaching Faculty</h1>
-        <input type="text" id="search-input" placeholder="Teacher ka naam search karein..." onkeyup="filterTeachers()">
+    <div class="header">
+        <h1 style="color: #1a73e8;">Our Teaching Faculty</h1>
+        <input type="text" id="search-input" placeholder="Teacher ka naam search karein..." onkeyup="filterData()">
     </div>
 
-    <div id="teacher-grid">
-        <p class="loading">Loading teacher profiles...</p>
-    </div>
+    <div id="teacher-grid">Loading...</div>
 
 <script>
-    // 1. APNA GOOGLE SHEET CSV URL YAHAN DALEIN
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A720gp1ZtIueM0wgGvj3bwygTir6-2UkMm5e7ckE3OXOKIAv1wB3-eODt7hZEHa6X7FtXaQ6NeXi/pub?output=csv';
+    // Link updated to TSV to avoid comma errors
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A72Ggp1ZTuemOwgGvj3bmygTir6-2UkWnSe7ckE3D8DKIAv1wB3-e0Dt7hZEWaSX7FTxaQGNexXi/pub?output=tsv';
+    let allData = [];
 
-    let allTeachers = [];
-
-    // Google Drive link ko direct image link mein badalne ka function
-    function fixDriveUrl(url) {
-        if (!url) return 'https://via.placeholder.com/150?text=No+Photo';
-        
-        // Agar link mein 'drive.google.com' hai, toh use convert karein
-        if (url.includes('drive.google.com')) {
-            const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)\//) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (fileIdMatch && fileIdMatch[1]) {
-                return `https://lh3.googleusercontent.com/d/YOUR_IMAGE_ID`; //
-            }
-        }
-        // Agar normal link hai (.jpg, .png), toh wahi rehne dein
-        return url;
-    }
-
-    async function fetchTeachers() {
+    async function fetchData() {
         try {
             const response = await fetch(sheetUrl);
-            const data = await response.text();
+            const text = await response.text();
+            const rows = text.split('\n').slice(1);
             
-            // CSV lines ko split karna
-            const rows = data.split('\n').slice(1); 
-            
-            allTeachers = rows.map(row => {
-                // Handle commas inside quotes for proper parsing
-                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                return cols ? cols.map(c => c.replace(/"/g, '').trim()) : null;
-            }).filter(row => row !== null && row[0] !== "");
-
-            displayTeachers(allTeachers);
-        } catch (error) {
-            document.getElementById('teacher-grid').innerHTML = "<p class='error-msg'>Data load karne mein error aaya. Kripya URL check karein.</p>";
-            console.error("Error fetching data:", error);
+            allData = rows.map(row => row.split('\t')).filter(cols => cols.length >= 8 && cols[0].trim() !== "");
+            render(allData);
+        } catch (e) {
+            document.getElementById('teacher-grid').innerHTML = "Data load nahi ho paya.";
         }
     }
 
-    function displayTeachers(teachers) {
-        let htmlContent = '';
+    function render(data) {
+        let html = '';
+        data.forEach((t, i) => {
+            // Fixing Google Drive Image Link
+            let photo = t[7].trim();
+            if(photo.includes('drive.google.com')){
+                let id = photo.split('id=')[1] || photo.split('/d/')[1].split('/')[0];
+                photo = `https://lh3.googleusercontent.com/d/${id}`;
+            }
 
-        if (teachers.length === 0) {
-            htmlContent = "<p class='error-msg'>Koi data nahi mila.</p>";
-        } else {
-            teachers.forEach((teacher, index) => {
-                // Photo URL ko fix karein
-                const finalPhotoUrl = fixDriveUrl(teacher[7]);
-                const serialNumber = index + 1;
-
-                htmlContent += `
-                    <div class="card">
-                        <div class="sn-badge">${serialNumber}</div>
-                        <img src="${finalPhotoUrl}" alt="Teacher Photo" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=Error'">
-                        <h2>${teacher[0]}</h2>
-                        <span class="designation">${teacher[3]}</span>
-                        
-                        <table class="info-table">
-                            <tr><td class="label">Father's Name:</td><td>${teacher[1]}</td></tr>
-                            <tr><td class="label">Mother's Name:</td><td>${teacher[2]}</td></tr>
-                            <tr><td class="label">Qualification:</td><td>${teacher[4]}</td></tr>
-                            <tr><td class="label">Subject:</td><td>${teacher[5]}</td></tr>
-                            <tr><td class="label">Experience:</td><td>${teacher[6]}</td></tr>
-                        </table>
-                    </div>
-                `;
-            });
-        }
-        document.getElementById('teacher-grid').innerHTML = htmlContent;
+            html += `
+                <div class="card">
+                    <div class="sn">${i+1}</div>
+                    <img src="${photo}" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
+                    <h2>${t[0]}</h2>
+                    <span class="desig">${t[3]}</span>
+                    <table class="info-table">
+                        <tr><td class="label">Father:</td><td>${t[1]}</td></tr>
+                        <tr><td class="label">Mother:</td><td>${t[2]}</td></tr>
+                        <tr><td class="label">Qualification:</td><td>${t[4]}</td></tr>
+                        <tr><td class="label">Subject:</td><td>${t[5]}</td></tr>
+                        <tr><td class="label">Experience:</td><td>${t[6]}</td></tr>
+                    </table>
+                </div>`;
+        });
+        document.getElementById('teacher-grid').innerHTML = html;
     }
 
-    function filterTeachers() {
-        const term = document.getElementById('search-input').value.toLowerCase().trim();
-        const filtered = allTeachers.filter(t => t[0].toLowerCase().includes(term));
-        displayTeachers(filtered);
+    function filterData() {
+        const val = document.getElementById('search-input').value.toLowerCase();
+        const filtered = allData.filter(t => t[0].toLowerCase().includes(val));
+        render(filtered);
     }
 
-    fetchTeachers();
+    fetchData();
 </script>
-
 </body>
 </html>
