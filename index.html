@@ -8,14 +8,6 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
         h1 { text-align: center; color: #1a73e8; margin-bottom: 30px; }
         
-        /* Search Bar Style (Naya add kiya gaya) */
-        .search-box { text-align: center; margin-bottom: 30px; }
-        #search-input { 
-            padding: 10px 20px; width: 80%; max-width: 400px; 
-            border-radius: 20px; border: 1px solid #1a73e8; outline: none;
-        }
-
-        /* Container for all cards */
         #teacher-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
@@ -24,7 +16,6 @@
             margin: 0 auto; 
         }
 
-        /* Individual Card Design */
         .card { 
             background: white; 
             border-radius: 12px; 
@@ -32,17 +23,8 @@
             text-align: center; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
             transition: transform 0.3s ease;
-            position: relative; /* Serial number ke liye zaroori */
         }
         .card:hover { transform: translateY(-5px); }
-
-        /* Serial Number Style (Naya add kiya gaya) */
-        .sn-badge {
-            position: absolute; top: 10px; right: 10px;
-            background: #1a73e8; color: white; width: 25px; height: 25px;
-            border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; font-size: 12px; font-weight: bold;
-        }
 
         .profile-img { 
             width: 120px; height: 120px; 
@@ -50,6 +32,7 @@
             object-fit: cover; 
             border: 4px solid #1a73e8; 
             margin-bottom: 15px;
+            background-color: #eee;
         }
 
         h2 { margin: 10px 0 5px; color: #333; font-size: 1.4rem; }
@@ -66,10 +49,6 @@
 
     <h1>Our Teaching Faculty</h1>
 
-    <div class="search-box">
-        <input type="text" id="search-input" placeholder="Search by name..." onkeyup="filterTeachers()">
-    </div>
-
     <div id="teacher-grid">
         <p class="loading">Loading teacher profiles...</p>
     </div>
@@ -77,58 +56,61 @@
 <script>
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A720gp1ZtIueM0wgGvj3bwygTir6-2UkMm5e7ckE3OXOKIAv1wB3-eODt7hZEHa6X7FtXaQ6NeXi/pub?output=csv';
 
-    let allTeachers = []; // Filter ke liye data store karne ke liye
+    // Sabse zaroori function: Jo Drive link ko fix karega
+    function fixDriveUrl(url) {
+        if (!url) return "";
+        url = url.trim();
+        // Agar link mein drive.google.com hai
+        if (url.includes("drive.google.com")) {
+            let fileId = "";
+            if (url.includes("id=")) {
+                fileId = url.split("id=")[1].split("&")[0];
+            } else if (url.includes("/d/")) {
+                fileId = url.split("/d/")[1].split("/")[0];
+            }
+            // Direct download link format jo browser support karta hai
+            return `https://lh3.googleusercontent.com/d/${fileId}`;
+        }
+        return url;
+    }
 
     async function fetchTeachers() {
         try {
             const response = await fetch(sheetUrl);
             const data = await response.text();
+            const rows = data.split('\n').slice(1);
             
-            const rows = data.split('\n').slice(1); 
-            
-            // Data ko global variable mein store kar rahe hain
-            allTeachers = rows.map(row => row.split(',')).filter(cols => cols.length >= 8 && cols[0].trim() !== "");
+            let htmlContent = '';
 
-            displayTeachers(allTeachers);
+            rows.forEach(row => {
+                const cols = row.split(',');
+
+                if (cols.length >= 8 && cols[0].trim() !== "") {
+                    // Yahan humne function call kiya hai photo fix karne ke liye
+                    let photo = fixDriveUrl(cols[7]);
+
+                    htmlContent += `
+                        <div class="card">
+                            <img src="${photo}" alt="Teacher Photo" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
+                            <h2>${cols[0]}</h2>
+                            <span class="designation">${cols[3]}</span>
+                            
+                            <table class="info-table">
+                                <tr><td class="label">Father's Name:</td><td>${cols[1]}</td></tr>
+                                <tr><td class="label">Mother's Name:</td><td>${cols[2]}</td></tr>
+                                <tr><td class="label">Qualification:</td><td>${cols[4]}</td></tr>
+                                <tr><td class="label">Subject:</td><td>${cols[5]}</td></tr>
+                                <tr><td class="label">Experience:</td><td>${cols[6]}</td></tr>
+                            </table>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('teacher-grid').innerHTML = htmlContent || "No data found.";
         } catch (error) {
             document.getElementById('teacher-grid').innerHTML = "Data load karne mein error aaya.";
-            console.error("Error:", error);
         }
-    }
-
-    function displayTeachers(data) {
-        let htmlContent = '';
-
-        data.forEach((cols, index) => {
-            // PHOTO FIX: .trim() lagaya hai taaki hidden characters URL na todein
-            let photoUrl = cols[7].trim();
-            
-            htmlContent += `
-                <div class="card">
-                    <div class="sn-badge">${index + 1}</div>
-                    <img src="${photoUrl}" alt="${cols[0]}" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
-                    <h2>${cols[0]}</h2>
-                    <span class="designation">${cols[3]}</span>
-                    
-                    <table class="info-table">
-                        <tr><td class="label">Father's Name:</td><td>${cols[1]}</td></tr>
-                        <tr><td class="label">Mother's Name:</td><td>${cols[2]}</td></tr>
-                        <tr><td class="label">Qualification:</td><td>${cols[4]}</td></tr>
-                        <tr><td class="label">Subject:</td><td>${cols[5]}</td></tr>
-                        <tr><td class="label">Experience:</td><td>${cols[6]}</td></tr>
-                    </table>
-                </div>
-            `;
-        });
-
-        document.getElementById('teacher-grid').innerHTML = htmlContent || "No data found.";
-    }
-
-    // Search function (Naya addition)
-    function filterTeachers() {
-        const term = document.getElementById('search-input').value.toLowerCase();
-        const filtered = allTeachers.filter(t => t[0].toLowerCase().includes(term));
-        displayTeachers(filtered);
     }
 
     fetchTeachers();
