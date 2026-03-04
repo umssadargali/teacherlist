@@ -3,98 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Directory</title>
+    <title>Teacher Profiles List</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .header-section { text-align: center; margin-bottom: 30px; }
-        h1 { color: #1a73e8; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #1a73e8; margin-bottom: 30px; }
         
-        /* Search Bar Style */
-        #search-input { 
-            padding: 12px; width: 80%; max-width: 400px; 
-            border-radius: 25px; border: 1px solid #ccc; 
-            outline: none; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
+        /* Container for all cards */
         #teacher-grid { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 20px; max-width: 1200px; margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
         }
 
+        /* Individual Card Design */
         .card { 
-            background: white; border-radius: 12px; padding: 20px; 
-            text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            background: white; 
+            border-radius: 12px; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            transition: transform 0.3s ease;
         }
+        .card:hover { transform: translateY(-5px); }
 
         .profile-img { 
-            width: 120px; height: 120px; border-radius: 50%; 
-            object-fit: cover; border: 4px solid #1a73e8; margin-bottom: 15px;
+            width: 120px; height: 120px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 4px solid #1a73e8; 
+            margin-bottom: 15px;
         }
 
+        h2 { margin: 10px 0 5px; color: #333; font-size: 1.4rem; }
         .designation { color: #1a73e8; font-weight: bold; margin-bottom: 15px; display: block; }
+
         .info-table { width: 100%; text-align: left; border-top: 1px solid #eee; padding-top: 10px; }
-        .info-table td { padding: 5px 0; font-size: 0.9rem; }
+        .info-table td { padding: 5px 0; font-size: 0.9rem; color: #555; }
         .label { font-weight: 600; width: 45%; color: #333; }
+        
+        .loading { text-align: center; font-size: 1.2rem; margin-top: 50px; }
     </style>
 </head>
 <body>
 
-    <div class="header-section">
-        <h1>Our Teaching Faculty</h1>
-        <input type="text" id="search-input" placeholder="Teacher ka naam search karein..." onkeyup="filterTeachers()">
-    </div>
+    <h1>Our Teaching Faculty</h1>
 
     <div id="teacher-grid">
-        <p style="text-align:center;">Loading teachers...</p>
+        <p class="loading">Loading teacher profiles...</p>
     </div>
 
 <script>
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A720gp1ZtIueM0wgGvj3bwygTir6-2UkMm5e7ckE3OXOKIAv1wB3-eODt7hZEHa6X7FtXaQ6NeXi/pub?output=csv'; // Step 1 wala link
-    let allTeachers = [];
+    // 1. APNA GOOGLE SHEET CSV URL YAHAN REPLACE KAREIN
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A720gp1ZtIueM0wgGvj3bwygTir6-2UkMm5e7ckE3OXOKIAv1wB3-eODt7hZEHa6X7FtXaQ6NeXi/pub?output=csv';
 
     async function fetchTeachers() {
         try {
             const response = await fetch(sheetUrl);
             const data = await response.text();
             
-            // CSV parsing logic
-            const rows = data.split('\n').slice(1); 
-            allTeachers = rows.map(row => {
-                // Handle commas inside quotes
-                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                return cols ? cols.map(c => c.replace(/"/g, '')) : null;
-            }).filter(row => row !== null && row[0] !== "");
+            // CSV lines ko split karna
+            const rows = data.split('\n').slice(1); // Pehli row (Header) ko skip karne ke liye slice(1)
+            
+            let htmlContent = '';
 
-            displayTeachers(allTeachers);
+            rows.forEach(row => {
+                // CSV columns ko comma se split karna
+                const cols = row.split(',');
+
+                // Agar row empty nahi hai toh card banayein
+                if (cols.length >= 8 && cols[0].trim() !== "") {
+                    htmlContent += `
+                        <div class="card">
+                            <img src="${cols[7]}" alt="Teacher Photo" class="profile-img" onerror="this.src='https://via.placeholder.com/150'">
+                            <h2>${cols[0]}</h2>
+                            <span class="designation">${cols[3]}</span>
+                            
+                            <table class="info-table">
+                                <tr><td class="label">Father's Name:</td><td>${cols[1]}</td></tr>
+                                <tr><td class="label">Mother's Name:</td><td>${cols[2]}</td></tr>
+                                <tr><td class="label">Qualification:</td><td>${cols[4]}</td></tr>
+                                <tr><td class="label">Subject:</td><td>${cols[5]}</td></tr>
+                                <tr><td class="label">Experience:</td><td>${cols[6]}</td></tr>
+                            </table>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('teacher-grid').innerHTML = htmlContent || "No data found.";
         } catch (error) {
-            document.getElementById('teacher-grid').innerHTML = "Link check karein, data nahi mil raha.";
+            document.getElementById('teacher-grid').innerHTML = "Data load karne mein error aaya. Kripya URL check karein.";
+            console.error("Error fetching data:", error);
         }
-    }
-
-    function displayTeachers(teachers) {
-        let html = '';
-        teachers.forEach(teacher => {
-            html += `
-                <div class="card">
-                    <img src="${teacher[7]}" class="profile-img" onerror="this.src='https://via.placeholder.com/150'">
-                    <h2>${teacher[0]}</h2>
-                    <span class="designation">${teacher[3]}</span>
-                    <table class="info-table">
-                        <tr><td class="label">Father:</td><td>${teacher[1]}</td></tr>
-                        <tr><td class="label">Mother:</td><td>${teacher[2]}</td></tr>
-                        <tr><td class="label">Qualification:</td><td>${teacher[4]}</td></tr>
-                        <tr><td class="label">Subject:</td><td>${teacher[5]}</td></tr>
-                        <tr><td class="label">Experience:</td><td>${teacher[6]}</td></tr>
-                    </table>
-                </div>`;
-        });
-        document.getElementById('teacher-grid').innerHTML = html;
-    }
-
-    function filterTeachers() {
-        const term = document.getElementById('search-input').value.toLowerCase();
-        const filtered = allTeachers.filter(t => t[0].toLowerCase().includes(term));
-        displayTeachers(filtered);
     }
 
     fetchTeachers();
