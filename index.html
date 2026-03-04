@@ -5,143 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sikshak Directory</title>
     <style>
-        /* Modern Attractive Gradient Background */
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-            margin: 0; 
-            padding: 30px 10px; 
-            min-height: 100vh;
-        }
-
-        h1 { 
-            text-align: center; 
-            color: #2c3e50; 
-            margin-bottom: 25px; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        /* Pehle wala simple white background design */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .header-section { text-align: center; margin-bottom: 30px; }
+        h1 { color: #1a73e8; }
         
-        /* Search Box styling */
-        .search-container {
-            text-align: center;
-            margin-bottom: 35px;
-        }
+        /* Search Bar Style */
         #search-input { 
-            padding: 14px 20px; 
-            width: 80%; 
-            max-width: 450px; 
-            border-radius: 30px; 
-            border: none;
-            outline: none; 
-            font-size: 16px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            transition: all 0.3s;
-        }
-        #search-input:focus {
-            box-shadow: 0 6px 20px rgba(26, 115, 232, 0.25);
+            padding: 12px; width: 80%; max-width: 400px; 
+            border-radius: 25px; border: 1px solid #ccc; 
+            outline: none; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         /* Container for cards */
         #teacher-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-            gap: 25px; 
-            max-width: 1300px; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            max-width: 1200px; 
             margin: 0 auto; 
-            padding: 0 10px;
         }
 
-        /* Highly Attractive Card Design with border and shadow */
+        /* Individual Card Design */
         .card { 
-            background: rgba(255, 255, 255, 0.95); 
-            border-radius: 18px; 
-            padding: 25px; 
+            background: white; 
+            border-radius: 12px; 
+            padding: 20px; 
             text-align: center; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
             position: relative;
-            border: 2px solid #e0e0e0;
-        }
-        .card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            border-color: #3498db;
         }
 
-        /* Serial Number design */
+        /* Serial Number badge */
         .sn-badge {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background-color: #3498db;
+            top: 10px;
+            right: 10px;
+            background-color: #1a73e8;
             color: white;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 25px;
+            height: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 12px;
             font-weight: bold;
-            font-size: 14px;
         }
 
         .profile-img { 
-            width: 130px; 
-            height: 130px; 
+            width: 120px; height: 120px; 
             border-radius: 50%; 
             object-fit: cover; 
-            border: 5px solid white; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
+            border: 4px solid #1a73e8; 
+            margin-bottom: 15px;
+            background-color: #eee; /* Loading placeholder color */
         }
 
-        h2 { 
-            margin: 10px 0 3px; 
-            color: #2c3e50; 
-            font-size: 1.5rem; 
-        }
-        .designation { 
-            color: #3498db; 
-            font-weight: 600; 
-            margin-bottom: 20px; 
-            display: block;
-            font-size: 1rem;
-        }
+        h2 { margin: 10px 0 5px; color: #333; font-size: 1.4rem; }
+        .designation { color: #1a73e8; font-weight: bold; margin-bottom: 15px; display: block; }
 
-        .info-table { 
-            width: 100%; 
-            text-align: left; 
-            border-top: 1px solid #eee; 
-            padding-top: 15px; 
-            border-collapse: collapse;
-        }
-        .info-table td { 
-            padding: 7px 0; 
-            font-size: 0.95rem; 
-            color: #555; 
-        }
-        .label { 
-            font-weight: 600; 
-            width: 45%; 
-            color: #333; 
-        }
-
-        .loading, .no-data { 
-            grid-column: 1 / -1; 
-            text-align: center; 
-            font-size: 1.3rem; 
-            color: white; 
-            margin-top: 50px; 
-        }
+        .info-table { width: 100%; text-align: left; border-top: 1px solid #eee; padding-top: 10px; border-collapse: collapse; }
+        .info-table td { padding: 5px 0; font-size: 0.9rem; color: #555; }
+        .label { font-weight: 600; width: 45%; color: #333; }
+        
+        .loading, .error-msg { text-align: center; font-size: 1.2rem; margin-top: 50px; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
 
-    <h1>Humaari Shikshak Faculty</h1>
-
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Shikshak ka naam search karein..." onkeyup="filterTeachers()">
+    <div class="header-section">
+        <h1>Our Teaching Faculty</h1>
+        <input type="text" id="search-input" placeholder="Teacher ka naam search karein..." onkeyup="filterTeachers()">
     </div>
 
     <div id="teacher-grid">
@@ -149,51 +84,71 @@
     </div>
 
 <script>
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A720gp1ZtIueM0wgGvj3bwygTir6-2UkMm5e7ckE3OXOKIAv1wB3-eODt7hZEHa6X7FtXaQ6NeXi/pub?output=csv';
+    // 1. APNA GOOGLE SHEET CSV URL YAHAN DALEIN
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A72Ggp1ZTuemOwgGvj3bmygTir6-2UkWnSe7ckE3D8DKIAv1wB3-e0Dt7hZEWaSX7FTxaQGNexXi/pub?output=csv';
+
     let allTeachers = [];
+
+    // Google Drive link ko direct image link mein badalne ka function
+    function fixDriveUrl(url) {
+        if (!url) return 'https://via.placeholder.com/150?text=No+Photo';
+        
+        // Agar link mein 'drive.google.com' hai, toh use convert karein
+        if (url.includes('drive.google.com')) {
+            const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)\//) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                return `https://lh3.googleusercontent.com/d/YOUR_IMAGE_ID`; //
+            }
+        }
+        // Agar normal link hai (.jpg, .png), toh wahi rehne dein
+        return url;
+    }
 
     async function fetchTeachers() {
         try {
             const response = await fetch(sheetUrl);
             const data = await response.text();
             
-            // Fixed parsing for standard CSV
-            const rows = data.split('\n').slice(1);
+            // CSV lines ko split karna
+            const rows = data.split('\n').slice(1); 
             
             allTeachers = rows.map(row => {
-                // Regular expression to handle commas inside quotes
+                // Handle commas inside quotes for proper parsing
                 const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
                 return cols ? cols.map(c => c.replace(/"/g, '').trim()) : null;
-            }).filter(row => row !== null && row.length >= 8 && row[0] !== "");
+            }).filter(row => row !== null && row[0] !== "");
 
             displayTeachers(allTeachers);
         } catch (error) {
-            document.getElementById('teacher-grid').innerHTML = "<p class='no-data'>Data load karne mein dikkat hui. Link check karein.</p>";
-            console.error("Error:", error);
+            document.getElementById('teacher-grid').innerHTML = "<p class='error-msg'>Data load karne mein error aaya. Kripya URL check karein.</p>";
+            console.error("Error fetching data:", error);
         }
     }
 
     function displayTeachers(teachers) {
         let htmlContent = '';
+
         if (teachers.length === 0) {
-            htmlContent = "<p class='no-data'>Koi data nahi mila.</p>";
+            htmlContent = "<p class='error-msg'>Koi data nahi mila.</p>";
         } else {
             teachers.forEach((teacher, index) => {
-                // Serial number is index + 1
+                // Photo URL ko fix karein
+                const finalPhotoUrl = fixDriveUrl(teacher[7]);
                 const serialNumber = index + 1;
+
                 htmlContent += `
                     <div class="card">
-                        <div class="sn-badge">#${serialNumber}</div>
-                        <img src="${teacher[7]}" alt="Photo" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
+                        <div class="sn-badge">${serialNumber}</div>
+                        <img src="${finalPhotoUrl}" alt="Teacher Photo" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=Error'">
                         <h2>${teacher[0]}</h2>
                         <span class="designation">${teacher[3]}</span>
                         
                         <table class="info-table">
-                            <tr><td class="label">Pita ka Naam:</td><td>${teacher[1]}</td></tr>
-                            <tr><td class="label">Mata ka Naam:</td><td>${teacher[2]}</td></tr>
-                            <tr><td class="label">Yogyata:</td><td>${teacher[4]}</td></tr>
-                            <tr><td class="label">Vishay:</td><td>${teacher[5]}</td></tr>
-                            <tr><td class="label">Anubhav:</td><td>${teacher[6]}</td></tr>
+                            <tr><td class="label">Father's Name:</td><td>${teacher[1]}</td></tr>
+                            <tr><td class="label">Mother's Name:</td><td>${teacher[2]}</td></tr>
+                            <tr><td class="label">Qualification:</td><td>${teacher[4]}</td></tr>
+                            <tr><td class="label">Subject:</td><td>${teacher[5]}</td></tr>
+                            <tr><td class="label">Experience:</td><td>${teacher[6]}</td></tr>
                         </table>
                     </div>
                 `;
