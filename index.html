@@ -6,21 +6,20 @@
     <title>Teacher Profiles List</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        h1 { text-align: center; color: #1a73e8; margin-bottom: 20px; }
+        h1 { text-align: center; color: #1a73e8; margin-bottom: 30px; }
         
-        /* Search Bar Box */
-        .search-container { text-align: center; margin-bottom: 30px; }
+        /* Search Bar Style (Naya add kiya gaya) */
+        .search-box { text-align: center; margin-bottom: 30px; }
         #search-input { 
-            padding: 12px 20px; width: 80%; max-width: 450px; 
-            border-radius: 25px; border: 2px solid #1a73e8; 
-            outline: none; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 10px 20px; width: 80%; max-width: 400px; 
+            border-radius: 20px; border: 1px solid #1a73e8; outline: none;
         }
 
         /* Container for all cards */
         #teacher-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 25px; 
+            gap: 20px; 
             max-width: 1200px; 
             margin: 0 auto; 
         }
@@ -28,50 +27,47 @@
         /* Individual Card Design */
         .card { 
             background: white; 
-            border-radius: 15px; 
-            padding: 25px; 
+            border-radius: 12px; 
+            padding: 20px; 
             text-align: center; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
             transition: transform 0.3s ease;
-            position: relative;
-            border-top: 5px solid #1a73e8;
+            position: relative; /* Serial number ke liye zaroori */
         }
-        .card:hover { transform: translateY(-8px); }
+        .card:hover { transform: translateY(-5px); }
 
-        /* Serial Number Badge */
+        /* Serial Number Style (Naya add kiya gaya) */
         .sn-badge {
-            position: absolute; top: 15px; right: 15px;
-            background: #1a73e8; color: white;
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 14px;
+            position: absolute; top: 10px; right: 10px;
+            background: #1a73e8; color: white; width: 25px; height: 25px;
+            border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; font-size: 12px; font-weight: bold;
         }
 
         .profile-img { 
-            width: 130px; height: 130px; 
+            width: 120px; height: 120px; 
             border-radius: 50%; 
             object-fit: cover; 
-            border: 4px solid #e8f0fe; 
+            border: 4px solid #1a73e8; 
             margin-bottom: 15px;
-            background-color: #f8f9fa;
         }
 
-        h2 { margin: 10px 0 5px; color: #333; font-size: 1.5rem; }
+        h2 { margin: 10px 0 5px; color: #333; font-size: 1.4rem; }
         .designation { color: #1a73e8; font-weight: bold; margin-bottom: 15px; display: block; }
 
-        .info-table { width: 100%; text-align: left; border-top: 1px solid #eee; padding-top: 15px; }
-        .info-table td { padding: 6px 0; font-size: 0.95rem; color: #555; }
+        .info-table { width: 100%; text-align: left; border-top: 1px solid #eee; padding-top: 10px; }
+        .info-table td { padding: 5px 0; font-size: 0.9rem; color: #555; }
         .label { font-weight: 600; width: 45%; color: #333; }
         
-        .loading { text-align: center; font-size: 1.2rem; margin-top: 50px; grid-column: 1/-1; }
+        .loading { text-align: center; font-size: 1.2rem; margin-top: 50px; }
     </style>
 </head>
 <body>
 
-    <h1>Humaari Shikshak Faculty</h1>
+    <h1>Our Teaching Faculty</h1>
 
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Shikshak ka naam search karein..." onkeyup="filterTeachers()">
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search by name..." onkeyup="filterTeachers()">
     </div>
 
     <div id="teacher-grid">
@@ -80,59 +76,55 @@
 
 <script>
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_A720gp1ZtIueM0wgGvj3bwygTir6-2UkMm5e7ckE3OXOKIAv1wB3-eODt7hZEHa6X7FtXaQ6NeXi/pub?output=csv';
-    
-    let allTeachers = [];
+
+    let allTeachers = []; // Filter ke liye data store karne ke liye
 
     async function fetchTeachers() {
         try {
             const response = await fetch(sheetUrl);
             const data = await response.text();
             
-            // CSV lines parsing (Handling possible line break issues)
-            const rows = data.split(/\r?\n/).slice(1); 
+            const rows = data.split('\n').slice(1); 
             
-            allTeachers = rows.map(row => {
-                // regex to handle commas inside qualification or names
-                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                return cols ? cols.map(c => c.replace(/"/g, '').trim()) : null;
-            }).filter(row => row !== null && row[0] !== "");
+            // Data ko global variable mein store kar rahe hain
+            allTeachers = rows.map(row => row.split(',')).filter(cols => cols.length >= 8 && cols[0].trim() !== "");
 
             displayTeachers(allTeachers);
         } catch (error) {
-            document.getElementById('teacher-grid').innerHTML = "<p class='loading'>Data load karne mein error aaya.</p>";
-            console.error(error);
+            document.getElementById('teacher-grid').innerHTML = "Data load karne mein error aaya.";
+            console.error("Error:", error);
         }
     }
 
-    function displayTeachers(teachers) {
+    function displayTeachers(data) {
         let htmlContent = '';
 
-        teachers.forEach((teacher, index) => {
-            // PHOTO FIX: Ensuring the URL is clean
-            let photoUrl = teacher[7] ? teacher[7].trim() : '';
-
+        data.forEach((cols, index) => {
+            // PHOTO FIX: .trim() lagaya hai taaki hidden characters URL na todein
+            let photoUrl = cols[7].trim();
+            
             htmlContent += `
                 <div class="card">
                     <div class="sn-badge">${index + 1}</div>
-                    <img src="${photoUrl}" alt="Photo" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
-                    <h2>${teacher[0]}</h2>
-                    <span class="designation">${teacher[3]}</span>
+                    <img src="${photoUrl}" alt="${cols[0]}" class="profile-img" onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
+                    <h2>${cols[0]}</h2>
+                    <span class="designation">${cols[3]}</span>
                     
                     <table class="info-table">
-                        <tr><td class="label">Pita ka Naam:</td><td>${teacher[1]}</td></tr>
-                        <tr><td class="label">Mata ka Naam:</td><td>${teacher[2]}</td></tr>
-                        <tr><td class="label">Qualification:</td><td>${teacher[4]}</td></tr>
-                        <tr><td class="label">Subject:</td><td>${teacher[5]}</td></tr>
-                        <tr><td class="label">Experience:</td><td>${teacher[6]}</td></tr>
+                        <tr><td class="label">Father's Name:</td><td>${cols[1]}</td></tr>
+                        <tr><td class="label">Mother's Name:</td><td>${cols[2]}</td></tr>
+                        <tr><td class="label">Qualification:</td><td>${cols[4]}</td></tr>
+                        <tr><td class="label">Subject:</td><td>${cols[5]}</td></tr>
+                        <tr><td class="label">Experience:</td><td>${cols[6]}</td></tr>
                     </table>
                 </div>
             `;
         });
 
-        document.getElementById('teacher-grid').innerHTML = htmlContent || "<p class='loading'>Koi data nahi mila.</p>";
+        document.getElementById('teacher-grid').innerHTML = htmlContent || "No data found.";
     }
 
-    // Search function
+    // Search function (Naya addition)
     function filterTeachers() {
         const term = document.getElementById('search-input').value.toLowerCase();
         const filtered = allTeachers.filter(t => t[0].toLowerCase().includes(term));
